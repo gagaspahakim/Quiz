@@ -72,17 +72,58 @@
             `;
         }
 
+        // 10 Pertanyaan Terbaru sesuai permintaan
         const quizData = [
-            { question: "Apa singkatan dari FIFO dalam manajemen stok?", options: ["First In First Out", "First In Fast Out", "Fast In Fast Out", "First In Final Out"], correct: 0 },
-            { question: "Strategi menata barang di dekat kasir untuk memicu pembelian spontan disebut?", options: ["Window Display", "Impulse Buying Display", "Thematic Display", "Island Display"], correct: 1 },
-            { question: "Manakah yang merupakan cara terbaik menangani komplain pelanggan?", options: ["Menghindar", "Menyalahkan rekan kerja", "Mendengar & Memberi Solusi", "Meminta pelanggan diam"], correct: 2 },
-            { question: "Apa tujuan utama dari melakukan 'Stock Opname'?", options: ["Mencari barang hilang saja", "Menghitung laba bersih", "Kecocokan stok fisik & sistem", "Menghabiskan waktu"], correct: 2 },
-            { question: "Apa istilah untuk menjual produk tambahan yang berhubungan dengan barang yang dibeli pelanggan?", options: ["Down-selling", "Cross-selling", "Out-selling", "Back-selling"], correct: 1 },
-            { question: "Istilah untuk selisih antara jumlah stok fisik yang tersedia dengan catatan di sistem disebut?", options: ["Shrinkage", "Markup", "Margin", "Overstock"], correct: 0 },
-            { question: "Teknik 'Up-selling' bertujuan untuk?", options: ["Menurunkan harga", "Menawarkan produk yang lebih murah", "Menawarkan produk dengan kualitas/nilai lebih tinggi", "Menjual produk yang rusak"], correct: 2 },
-            { question: "Apa yang dimaksud dengan Planogram?", options: ["Diagram rencana toko", "Peta perjalanan karyawan", "Diagram visual tata letak produk di rak", "Rencana promosi bulanan"], correct: 2 },
-            { question: "Mana di bawah ini yang merupakan indikator keberhasilan penjualan (KPI)?", options: ["Jumlah jam istirahat", "Average Transaction Value (ATV)", "Warna seragam", "Jumlah lampu toko"], correct: 1 },
-            { question: "Apa tindakan pertama saat menemukan barang yang sudah lewat masa kadaluarsa (Expired)?", options: ["Menurunkan harga", "Menarik dari rak display", "Menjualnya di diskon besar", "Dibiarkan saja"], correct: 1 }
+            { 
+                question: "Mengapa Operational Excellence (OE) diposisikan sebagai fondasi terbawah dalam piramida alat strategis SQ Alfamidi?", 
+                options: ["Karena operasional adalah departemen dengan jumlah karyawan terbanyak.", "Karena kualitas layanan mustahil terwujud jika proses internal masih kacau.", "Agar perusahaan dapat menekan biaya operasional sekecil mungkin.", "Karena kepemimpinan efektif hanya jika staf memahami SOP."], 
+                correct: 1 
+            },
+            { 
+                question: "Dalam konteks hakikat bisnis ritel, apa tantangan tersulit dalam menjaga 'Keseimbangan Optimal'?", 
+                options: ["Pelayanan terbaik namun tetap menggunakan sumber daya yang minimal secara efisien.", "Menyeimbangkan jam kerja antara karyawan Warehouse dan Office.", "Memastikan jumlah produk selalu lebih banyak daripada permintaan.", "Mewajibkan seluruh personel memiliki Growth Mindset."], 
+                correct: 0 
+            },
+            { 
+                question: "Jika kasir melayani cepat namun kurang ramah dan tidak peduli, pilar mana dalam SQ Framework yang gagal?", 
+                options: ["Pilar Process", "Pilar Product", "Pilar People (mengabaikan proaktif, peduli, tulus)", "Pilar Place"], 
+                correct: 2 
+            },
+            { 
+                question: "Kapan sebuah layanan dikategorikan sebagai 'Excellence Service' menurut SQ Perspective?", 
+                options: ["Ketika dijalankan sesuai SOP.", "Ketika tidak ada komplain sama sekali.", "Ketika mencapai target penjualan dan laba.", "Ketika kualitas layanan aktual melampaui harapan konsumen."], 
+                correct: 3 
+            },
+            { 
+                question: "Mengapa keluhan pelanggan disebut sebagai 'Titik Balik' dalam hubungan konsumen dengan Alfamidi?", 
+                options: ["Indikator kegagalan strategi ALFACARE.", "Penanganan yang tepat mengubah kekecewaan menjadi loyalitas kuat.", "Keluhan menurunkan reputasi secara permanen.", "Menunjukkan karyawan memiliki Fixed Mindset."], 
+                correct: 1 
+            },
+            { 
+                question: "Negara manakah yang secara resmi dikenal sebagai negara penghasil timah terbesar di dunia?", 
+                options: ["Indonesia", "Malaysia", "China", "Thailand"], 
+                correct: 2 
+            },
+            { 
+                question: "Di manakah letak kantor pusat organisasi kesehatan dunia atau WHO?", 
+                options: ["New York, Amerika Serikat", "Den Haag, Belanda", "Jenewa, Swiss", "Brussels, Belgia"], 
+                correct: 2 
+            },
+            { 
+                question: "Siapakah tokoh yang mengusulkan istilah 'Pancasila' pada sidang BPUPKI 1 Juni 1945?", 
+                options: ["Mohammad Yamin", "Dr. Soepomo", "Ir. Soekarno", "Drs. Moh. Hatta"], 
+                correct: 2 
+            },
+            { 
+                question: "Manakah di antara selat berikut ini yang memegang predikat sebagai selat terpanjang di dunia?", 
+                options: ["Selat Sunda", "Selat Malaka", "Selat Makassar", "Selat Bali"], 
+                correct: 1 
+            },
+            { 
+                question: "Di balik dedikasinya, apakah cita-cita pribadi dari Pak Abdul Rouf yang sebenarnya?", 
+                options: ["GM Building & Maintenance.", "Direktur Operasional Ritel.", "Menjadi seorang Kapolsek.", "Konsultan Arsitektur."], 
+                correct: 2 
+            }
         ];
 
         async function initApp() {
@@ -112,7 +153,7 @@
                             <i class="fas fa-rocket text-3xl"></i>
                         </div>
                         <h1 class="text-4xl font-black mb-2 bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent italic tracking-tighter uppercase">GASHOOT QUIZ</h1>
-                        <p class="text-slate-400 text-xs font-bold tracking-[0.3em] mb-8 uppercase">Service Quality</p>
+                        <p class="text-slate-400 text-xs font-bold tracking-[0.3em] mb-8 uppercase">Special Edition</p>
                         
                         <input type="text" id="playerName" placeholder="Nama Peserta..." class="w-full p-4 bg-slate-900 border border-slate-700 rounded-2xl mb-4 text-center font-bold outline-none focus:border-blue-500 transition-all text-white">
                         
@@ -130,12 +171,10 @@
             document.getElementById('joinBtn').onclick = () => {
                 const name = document.getElementById('playerName').value;
                 if(name.trim().length < 2) return alert("Nama minimal 2 karakter!");
-                // Musik TIDAK dinyalakan otomatis untuk peserta
                 joinGame(name);
             };
             
             document.getElementById('hostBtn').onclick = () => {
-                // Musik dinyalakan otomatis HANYA untuk analyst
                 if(!isMusicPlaying) window.toggleMusic();
                 becomeHost();
             };
@@ -365,7 +404,7 @@
                     ${role === 'host' ? `
                         <div class="fixed bottom-10 left-1/2 -translate-x-1/2 w-full max-w-xs flex flex-col gap-4 px-6 z-20">
                             <button id="nextBtn" class="w-full bg-white text-slate-950 px-10 py-4 rounded-2xl font-black text-xl hover:bg-blue-400 transition-all uppercase italic shadow-2xl">
-                                ${isLast ? 'Tutup & Reset' : 'Soal Berikutnya'}
+                                ${isLast ? 'Selesai & Reset' : 'Soal Berikutnya'}
                             </button>
                         </div>
                     ` : `
@@ -404,4 +443,3 @@
     </div>
 </body>
 </html>
-
