@@ -3,16 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Retail Quiz Master - Coaching System</title>
+    <title>Gashoot Quiz Master</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Tambahkan library Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, collection, query, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc, collection, query, getDocs, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+        const firebaseConfig = {
             apiKey: "AIzaSyCYwOfdR7Ii5vgW8UN1XRUrX6J0ShOPBOQ",
             authDomain: "retail-quiz-3d431.firebaseapp.com",
             projectId: "retail-quiz-3d431",
@@ -23,64 +25,64 @@
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'retail-quiz-3d431';
 
         const mainContainer = document.getElementById('app-container');
-        function render(html) { mainContainer.innerHTML = html; }
-
         let app, auth, db, currentUser, role, currentGameState;
+        let isMusicPlaying = false;
+        let confettiInterval = null;
+        
+        // Audio setup
+        const bgMusic = new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3');
+        bgMusic.loop = true;
+        bgMusic.volume = 0.5;
 
-        // ==========================================
-        // DATA 10 PERTANYAAN RETAIL
-        // ==========================================
-        const quizData = [
-            { 
-                question: "Apa singkatan dari FIFO dalam manajemen stok?", 
-                options: ["First In First Out", "First In Fast Out", "Fast In Fast Out", "First In Final Out"], 
-                correct: 0 
-            },
-            { 
-                question: "Strategi menata barang di dekat kasir untuk memicu pembelian spontan disebut?", 
-                options: ["Window Display", "Impulse Buying Display", "Thematic Display", "Island Display"], 
-                correct: 1 
-            },
-            { 
-                question: "Manakah yang merupakan cara terbaik menangani komplain pelanggan?", 
-                options: ["Menghindar", "Menyalahkan rekan kerja", "Mendengar & Memberi Solusi", "Meminta pelanggan diam"], 
-                correct: 2 
-            },
-            { 
-                question: "Apa tujuan utama dari melakukan 'Stock Opname'?", 
-                options: ["Mencari barang hilang saja", "Menghitung laba bersih", "Kecocokan stok fisik & sistem", "Menghabiskan waktu"], 
-                correct: 2 
-            },
-            { 
-                question: "Apa istilah untuk menjual produk tambahan yang berhubungan dengan barang yang dibeli pelanggan?", 
-                options: ["Down-selling", "Cross-selling", "Out-selling", "Back-selling"], 
-                correct: 1 
-            },
-            { 
-                question: "Istilah untuk selisih antara jumlah stok fisik yang tersedia dengan catatan di sistem disebut?", 
-                options: ["Shrinkage", "Markup", "Margin", "Overstock"], 
-                correct: 0 
-            },
-            { 
-                question: "Teknik 'Up-selling' bertujuan untuk?", 
-                options: ["Menurunkan harga", "Menawarkan produk yang lebih murah", "Menawarkan produk dengan kualitas/nilai lebih tinggi", "Menjual produk yang rusak"], 
-                correct: 2 
-            },
-            { 
-                question: "Apa yang dimaksud dengan Planogram?", 
-                options: ["Diagram rencana toko", "Peta perjalanan karyawan", "Diagram visual tata letak produk di rak", "Rencana promosi bulanan"], 
-                correct: 2 
-            },
-            { 
-                question: "Mana di bawah ini yang merupakan indikator keberhasilan penjualan (KPI)?", 
-                options: ["Jumlah jam istirahat", "Average Transaction Value (ATV)", "Warna seragam", "Jumlah lampu toko"], 
-                correct: 1 
-            },
-            { 
-                question: "Apa tindakan pertama saat menemukan barang yang sudah lewat masa kadaluarsa (Expired)?", 
-                options: ["Menurunkan harga", "Menarik dari rak display", "Menjualnya di diskon besar", "Dibiarkan saja"], 
-                correct: 1 
+        function render(html) { 
+            mainContainer.innerHTML = html;
+            renderAudioControl();
+        }
+
+        window.toggleMusic = () => {
+            if (isMusicPlaying) {
+                bgMusic.pause();
+                isMusicPlaying = false;
+            } else {
+                const playPromise = bgMusic.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(_ => {
+                        isMusicPlaying = true;
+                        renderAudioControl();
+                    }).catch(error => {
+                        console.error("Playback gagal:", error);
+                    });
+                }
             }
+            renderAudioControl();
+        };
+
+        function renderAudioControl() {
+            let control = document.getElementById('audio-control');
+            if (!control) {
+                control = document.createElement('div');
+                control.id = 'audio-control';
+                control.className = 'fixed top-6 right-6 z-50';
+                document.body.appendChild(control);
+            }
+            control.innerHTML = `
+                <button onclick="toggleMusic()" class="w-12 h-12 bg-slate-800 border border-slate-700 rounded-full flex items-center justify-center text-white shadow-xl hover:bg-slate-700 transition-all active:scale-90">
+                    <i class="fas ${isMusicPlaying ? 'fa-volume-up text-blue-400' : 'fa-volume-mute text-slate-500'}"></i>
+                </button>
+            `;
+        }
+
+        const quizData = [
+            { question: "Apa singkatan dari FIFO dalam manajemen stok?", options: ["First In First Out", "First In Fast Out", "Fast In Fast Out", "First In Final Out"], correct: 0 },
+            { question: "Strategi menata barang di dekat kasir untuk memicu pembelian spontan disebut?", options: ["Window Display", "Impulse Buying Display", "Thematic Display", "Island Display"], correct: 1 },
+            { question: "Manakah yang merupakan cara terbaik menangani komplain pelanggan?", options: ["Menghindar", "Menyalahkan rekan kerja", "Mendengar & Memberi Solusi", "Meminta pelanggan diam"], correct: 2 },
+            { question: "Apa tujuan utama dari melakukan 'Stock Opname'?", options: ["Mencari barang hilang saja", "Menghitung laba bersih", "Kecocokan stok fisik & sistem", "Menghabiskan waktu"], correct: 2 },
+            { question: "Apa istilah untuk menjual produk tambahan yang berhubungan dengan barang yang dibeli pelanggan?", options: ["Down-selling", "Cross-selling", "Out-selling", "Back-selling"], correct: 1 },
+            { question: "Istilah untuk selisih antara jumlah stok fisik yang tersedia dengan catatan di sistem disebut?", options: ["Shrinkage", "Markup", "Margin", "Overstock"], correct: 0 },
+            { question: "Teknik 'Up-selling' bertujuan untuk?", options: ["Menurunkan harga", "Menawarkan produk yang lebih murah", "Menawarkan produk dengan kualitas/nilai lebih tinggi", "Menjual produk yang rusak"], correct: 2 },
+            { question: "Apa yang dimaksud dengan Planogram?", options: ["Diagram rencana toko", "Peta perjalanan karyawan", "Diagram visual tata letak produk di rak", "Rencana promosi bulanan"], correct: 2 },
+            { question: "Mana di bawah ini yang merupakan indikator keberhasilan penjualan (KPI)?", options: ["Jumlah jam istirahat", "Average Transaction Value (ATV)", "Warna seragam", "Jumlah lampu toko"], correct: 1 },
+            { question: "Apa tindakan pertama saat menemukan barang yang sudah lewat masa kadaluarsa (Expired)?", options: ["Menurunkan harga", "Menarik dari rak display", "Menjualnya di diskon besar", "Dibiarkan saja"], correct: 1 }
         ];
 
         async function initApp() {
@@ -89,53 +91,54 @@
                 auth = getAuth(app);
                 db = getFirestore(app);
 
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-
                 onAuthStateChanged(auth, (user) => {
                     if (user) {
                         currentUser = user;
                         showLandingPage();
+                    } else {
+                        signInAnonymously(auth);
                     }
                 });
             } catch (error) {
-                console.error("Firebase Init Error:", error);
-                render(`<div class="min-h-screen flex items-center justify-center bg-red-50 p-6">Gagal memuat sistem.</div>`);
+                render(`<div class="p-10 text-center text-white">Error connecting to database.</div>`);
             }
         }
 
         function showLandingPage() {
             render(`
-                <div class="min-h-screen flex flex-col items-center justify-center bg-blue-600 text-white p-6">
-                    <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md text-gray-800 text-center">
-                        <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-600 text-3xl">
-                            <i class="fas fa-store"></i>
+                <div class="min-h-screen flex flex-col items-center justify-center bg-slate-900 text-white p-6">
+                    <div class="bg-slate-800 border border-slate-700 p-8 rounded-[2.5rem] shadow-2xl w-full max-w-md text-center">
+                        <div class="w-20 h-20 bg-blue-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-blue-500/20 rotate-3">
+                            <i class="fas fa-rocket text-3xl"></i>
                         </div>
-                        <h1 class="text-3xl font-black mb-2 text-blue-600 italic tracking-tighter uppercase">GASHOOT QUIZ</h1>
-                        <p class="text-gray-400 text-sm mb-6">Waktunya Kita Quiz..</p>
+                        <h1 class="text-4xl font-black mb-2 bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent italic tracking-tighter uppercase">GASHOOT QUIZ</h1>
+                        <p class="text-slate-400 text-xs font-bold tracking-[0.3em] mb-8 uppercase">Retail Mastery Edition</p>
                         
-                        <input type="text" id="playerName" placeholder="Nama Lengkap Peserta" class="w-full p-4 border-2 border-gray-100 rounded-2xl mb-4 text-lg outline-none focus:border-blue-500 transition-all text-center font-bold">
+                        <input type="text" id="playerName" placeholder="Nama Peserta..." class="w-full p-4 bg-slate-900 border border-slate-700 rounded-2xl mb-4 text-center font-bold outline-none focus:border-blue-500 transition-all text-white">
                         
-                        <button id="joinBtn" class="w-full bg-blue-600 text-white font-bold py-4 rounded-2xl text-xl shadow-lg hover:bg-blue-700 active:scale-95 transition mb-3">
-                            <i class="fas fa-sign-in-alt mr-2"></i> MASUK LOBBY
+                        <button id="joinBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl text-xl shadow-xl transition-all active:scale-95 mb-4 uppercase italic">
+                            Masuk Lobby
                         </button>
                         
-                        <button id="hostBtn" class="w-full py-2 text-gray-400 text-xs font-bold uppercase tracking-widest hover:text-blue-500 transition">
-                            Login sebagai Analyst (Host)
+                        <button id="hostBtn" class="text-slate-500 text-[10px] font-bold uppercase tracking-widest hover:text-blue-400 transition">
+                            Login sebagai Analyst
                         </button>
                     </div>
+                    <p class="mt-8 text-slate-500 text-xs italic">Klik ikon speaker di pojok atas jika musik tidak mulai otomatis.</p>
                 </div>
             `);
 
             document.getElementById('joinBtn').onclick = () => {
                 const name = document.getElementById('playerName').value;
-                if(name.trim().length < 2) return alert("Masukkan nama yang valid!");
+                if(name.trim().length < 2) return alert("Nama minimal 2 karakter!");
+                if(!isMusicPlaying) window.toggleMusic();
                 joinGame(name);
             };
-            document.getElementById('hostBtn').onclick = () => becomeHost();
+            
+            document.getElementById('hostBtn').onclick = () => {
+                if(!isMusicPlaying) window.toggleMusic();
+                becomeHost();
+            };
         }
 
         async function joinGame(name) {
@@ -148,12 +151,7 @@
         async function becomeHost() {
             role = 'host';
             const gameDoc = doc(db, 'artifacts', appId, 'public', 'data', 'gameStatus', 'main');
-            const snap = await getDoc(gameDoc);
-            if (!snap.exists()) {
-                await setDoc(gameDoc, { currentStep: 'lobby', questionIndex: 0 });
-            } else {
-                await updateDoc(gameDoc, { currentStep: 'lobby', questionIndex: 0 });
-            }
+            await setDoc(gameDoc, { currentStep: 'lobby', questionIndex: 0 }, { merge: true });
             listenToGameState();
         }
 
@@ -169,6 +167,13 @@
 
         function updateUI() {
             if (!currentGameState) return;
+            
+            // Hentikan confetti jika pindah langkah selain leaderboard final
+            if (confettiInterval) {
+                clearInterval(confettiInterval);
+                confettiInterval = null;
+            }
+
             switch(currentGameState.currentStep) {
                 case 'lobby': showLobby(); break;
                 case 'question': showQuestion(); break;
@@ -176,35 +181,43 @@
             }
         }
 
+        window.resetGameData = async () => {
+            if (!confirm("Apakah Anda yakin ingin menghapus SEMUA data pemain dan kembali ke awal?")) return;
+            
+            const batch = writeBatch(db);
+            const playerSnap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'players'));
+            playerSnap.forEach(doc => batch.delete(doc.ref));
+            
+            const gameRef = doc(db, 'artifacts', appId, 'public', 'data', 'gameStatus', 'main');
+            batch.set(gameRef, { currentStep: 'lobby', questionIndex: 0 });
+            
+            await batch.commit();
+            location.reload(); 
+        };
+
         function showLobby() {
             render(`
-                <div class="min-h-screen bg-blue-700 text-white p-6 flex flex-col items-center">
-                    <div class="max-w-5xl w-full flex flex-col items-center">
-                        <h1 class="text-4xl md:text-6xl font-black mb-2 italic tracking-tighter">LOBBY PESERTA</h1>
-                        <div id="playerCount" class="bg-yellow-400 text-blue-900 px-6 py-2 rounded-full font-black text-xl mb-10 shadow-lg animate-bounce">
+                <div class="min-h-screen bg-slate-950 text-white p-6 flex flex-col items-center">
+                    <div class="max-w-5xl w-full text-center mt-10">
+                        <h1 class="text-5xl font-black mb-2 italic tracking-tighter uppercase">LOBBY <span class="text-blue-500">PESERTA</span></h1>
+                        <div id="playerCount" class="inline-block bg-blue-600/20 text-blue-400 px-6 py-2 rounded-full font-black text-sm mb-12 border border-blue-500/30">
                             0 Orang Bergabung
                         </div>
                         
-                        <div id="playerList" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 w-full mb-12 max-h-[50vh] overflow-y-auto p-4 bg-blue-800/30 rounded-3xl border border-white/10 scrollbar-hide">
-                            <!-- Nama peserta muncul di sini -->
-                        </div>
+                        <div id="playerList" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-20"></div>
                         
                         ${role === 'host' ? `
-                            <div class="flex flex-col items-center gap-6 sticky bottom-10 w-full">
-                                <button id="startBtn" class="bg-green-500 hover:bg-green-400 text-white px-16 py-6 rounded-full text-3xl font-black shadow-[0_10px_0_0_#15803d] transition-all hover:-translate-y-1 active:translate-y-1 active:shadow-none uppercase">
-                                    <i class="fas fa-play mr-3"></i> MULAI KUIS SEKARANG
+                            <div class="fixed bottom-10 left-1/2 -translate-x-1/2 w-full max-w-md px-6 flex flex-col gap-4">
+                                <button id="startBtn" class="w-full bg-blue-600 text-white px-8 py-4 rounded-2xl text-2xl font-black shadow-2xl hover:bg-blue-500 transition-all uppercase italic">
+                                    Mulai Kuis
                                 </button>
-                                <button id="resetPlayers" class="text-white/40 hover:text-red-400 text-xs font-bold uppercase tracking-widest transition">
-                                    <i class="fas fa-sync-alt mr-2"></i> Bersihkan Daftar Peserta
+                                <button onclick="resetGameData()" class="text-rose-500 text-xs font-bold uppercase tracking-widest hover:text-rose-400 transition">
+                                    <i class="fas fa-trash-alt mr-2"></i> Reset Seluruh Data & Pemain
                                 </button>
                             </div>
                         ` : `
-                            <div class="text-center">
-                                <div class="inline-block p-6 bg-white/10 rounded-full mb-4 animate-pulse">
-                                    <i class="fas fa-user-clock text-4xl"></i>
-                                </div>
-                                <p class="text-2xl font-bold italic">Menunggu Analyst memulai kuis...</p>
-                                <p class="text-blue-300 mt-2">Nama Anda sudah terdaftar di layar utama.</p>
+                            <div class="bg-slate-900/50 p-6 rounded-3xl border border-slate-800">
+                                <p class="text-slate-500 animate-pulse font-bold italic uppercase tracking-widest">Menunggu Analyst memulai kuis...</p>
                             </div>
                         `}
                     </div>
@@ -212,14 +225,9 @@
             `);
 
             if (role === 'host') {
-                document.getElementById('startBtn').onclick = startQuiz;
-                document.getElementById('resetPlayers').onclick = async () => {
-                    if(confirm("Hapus semua peserta dan mulai dari nol?")) {
-                        const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'players'));
-                        const snap = await getDocs(q);
-                        snap.forEach(async (d) => await deleteDoc(d.ref));
-                    }
-                };
+                document.getElementById('startBtn').onclick = () => 
+                    updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'gameStatus', 'main'), 
+                    { currentStep: 'question', questionIndex: 0, startTime: Date.now() });
             }
 
             const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'players'));
@@ -227,71 +235,50 @@
                 const list = document.getElementById('playerList');
                 const countEl = document.getElementById('playerCount');
                 if (!list || !countEl) return;
-                
                 list.innerHTML = '';
                 countEl.innerText = `${snap.size} Orang Bergabung`;
-                
-                if(snap.empty) {
-                    list.innerHTML = '<div class="col-span-full text-center py-10 text-white/20 italic">Belum ada peserta...</div>';
-                }
-
                 snap.forEach(doc => {
                     list.innerHTML += `
-                        <div class="bg-white text-blue-900 p-4 rounded-2xl font-black shadow-xl text-center text-sm uppercase italic border-b-4 border-blue-200 animate-fade-in flex items-center justify-center gap-2">
-                            <i class="fas fa-check-circle text-green-500 text-xs"></i> ${doc.data().name}
+                        <div class="bg-slate-800 border border-slate-700 p-4 rounded-2xl font-bold text-xs uppercase truncate">
+                            ${doc.data().name}
                         </div>`;
                 });
             });
-        }
-
-        async function startQuiz() {
-            const gameDoc = doc(db, 'artifacts', appId, 'public', 'data', 'gameStatus', 'main');
-            await updateDoc(gameDoc, { currentStep: 'question', questionIndex: 0, startTime: Date.now() });
         }
 
         function showQuestion() {
             const q = quizData[currentGameState.questionIndex];
             if (role === 'host') {
                 render(`
-                    <div class="min-h-screen bg-gray-100 p-6 flex flex-col items-center justify-center">
-                        <div class="bg-white p-10 rounded-[3rem] shadow-2xl w-full max-w-4xl text-center border-b-[12px] border-blue-200 relative overflow-hidden">
-                            <div class="absolute top-0 left-0 w-full h-2 bg-blue-500"></div>
-                            <p class="text-blue-600 font-bold mb-4 uppercase tracking-widest italic text-sm">PERTANYAAN ${currentGameState.questionIndex + 1} / ${quizData.length}</p>
-                            <h2 class="text-4xl font-black mb-10 text-gray-800 leading-tight">${q.question}</h2>
-                            <div class="grid grid-cols-2 gap-6">
+                    <div class="min-h-screen bg-slate-900 p-6 flex flex-col items-center justify-center text-white text-center">
+                        <div class="max-w-4xl w-full">
+                            <p class="text-blue-400 font-black mb-4 uppercase tracking-[0.3em] text-xs">Pertanyaan ${currentGameState.questionIndex + 1} / 10</p>
+                            <h2 class="text-4xl md:text-5xl font-black mb-12 leading-tight italic tracking-tight">${q.question}</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
                                 ${q.options.map((o, idx) => `
-                                    <div class="p-6 bg-blue-50 border-2 border-blue-100 rounded-3xl text-2xl font-bold text-blue-900 italic flex items-center">
-                                        <span class="w-12 h-12 bg-blue-600 text-white rounded-xl flex items-center justify-center mr-4 text-sm not-italic shadow-lg">
-                                            ${['A','B','C','D'][idx]}
-                                        </span>
-                                        <span class="text-left">${o}</span>
+                                    <div class="p-6 bg-slate-800 border border-slate-700 rounded-3xl text-xl font-bold flex items-center">
+                                        <span class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center mr-4 text-sm">${['A','B','C','D'][idx]}</span>
+                                        ${o}
                                     </div>
                                 `).join('')}
                             </div>
-                            <div class="mt-8 text-gray-400 text-sm font-bold uppercase italic tracking-widest">
-                                Bobot: 70% Akurasi + 30% Kecepatan
-                            </div>
-                            <button id="showLeaderBtn" class="mt-8 bg-blue-600 text-white px-12 py-5 rounded-full font-black text-2xl hover:bg-blue-700 transition-all shadow-xl hover:scale-105 active:scale-95 uppercase tracking-tighter">
-                                LIHAT HASIL SKOR <i class="fas fa-chart-bar ml-2"></i>
+                            <button id="showLeaderBtn" class="mt-12 bg-blue-600 px-10 py-4 rounded-full font-black text-xl hover:bg-blue-500 transition-all shadow-lg uppercase italic">
+                                Lihat Hasil Skor
                             </button>
                         </div>
                     </div>
                 `);
-                document.getElementById('showLeaderBtn').onclick = async () => {
-                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'gameStatus', 'main'), { currentStep: 'leaderboard' });
-                };
+                document.getElementById('showLeaderBtn').onclick = () => 
+                    updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'gameStatus', 'main'), { currentStep: 'leaderboard' });
             } else {
                 render(`
-                    <div class="min-h-screen bg-blue-600 p-4 flex flex-col items-center justify-center text-white">
-                        <div class="text-center mb-8">
-                            <h2 class="text-4xl font-black italic uppercase tracking-tighter">JAWAB CEPAT!</h2>
-                            <p class="text-blue-200 font-bold italic">Semakin cepat, semakin tinggi skor kecepatan (30%)</p>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4 w-full max-w-md h-[65vh]">
-                            <button onclick="sendAnswer(0)" class="bg-red-500 rounded-[2.5rem] text-6xl shadow-xl active:scale-90 border-b-8 border-red-700 transition-transform flex items-center justify-center">A</button>
-                            <button onclick="sendAnswer(1)" class="bg-blue-500 rounded-[2.5rem] text-6xl shadow-xl active:scale-90 border-b-8 border-blue-700 transition-transform flex items-center justify-center">B</button>
-                            <button onclick="sendAnswer(2)" class="bg-yellow-500 rounded-[2.5rem] text-6xl shadow-xl active:scale-90 border-b-8 border-yellow-700 transition-transform flex items-center justify-center">C</button>
-                            <button onclick="sendAnswer(3)" class="bg-green-500 rounded-[2.5rem] text-6xl shadow-xl active:scale-90 border-b-8 border-green-700 transition-transform flex items-center justify-center">D</button>
+                    <div class="min-h-screen bg-slate-900 p-4 flex flex-col justify-center items-center">
+                         <p class="text-blue-400 font-black mb-6 uppercase tracking-[0.3em] text-xs text-center">Pilih Jawaban di Layar Anda</p>
+                        <div class="grid grid-cols-2 gap-4 w-full h-[60vh] max-w-md">
+                            <button onclick="sendAnswer(0)" class="bg-rose-500 rounded-[2.5rem] text-5xl font-black text-white shadow-[0_8px_0_0_#9f1239] active:translate-y-1 active:shadow-none transition-all">A</button>
+                            <button onclick="sendAnswer(1)" class="bg-blue-500 rounded-[2.5rem] text-5xl font-black text-white shadow-[0_8px_0_0_#1e40af] active:translate-y-1 active:shadow-none transition-all">B</button>
+                            <button onclick="sendAnswer(2)" class="bg-amber-500 rounded-[2.5rem] text-5xl font-black text-white shadow-[0_8px_0_0_#92400e] active:translate-y-1 active:shadow-none transition-all">C</button>
+                            <button onclick="sendAnswer(3)" class="bg-emerald-500 rounded-[2.5rem] text-5xl font-black text-white shadow-[0_8px_0_0_#065f46] active:translate-y-1 active:shadow-none transition-all">D</button>
                         </div>
                     </div>
                 `);
@@ -301,37 +288,49 @@
         window.sendAnswer = async (i) => {
             const q = quizData[currentGameState.questionIndex];
             let points = 0;
-            
             if (i === q.correct) {
-                // Bobot 70% dari jawaban benar (700 poin)
-                const accuracyScore = 700;
-                
-                // Bobot 30% dari kecepatan (300 poin)
-                // Asumsi batas waktu maksimal untuk kecepatan penuh adalah 20 detik
                 const timeTaken = (Date.now() - currentGameState.startTime) / 1000;
-                const maxTime = 20; 
-                const speedBonus = Math.max(0, Math.floor(300 * ((maxTime - timeTaken) / maxTime)));
-                
-                points = accuracyScore + speedBonus;
+                points = 700 + Math.max(0, Math.floor(300 * ((20 - timeTaken) / 20)));
             }
-            
             const pDoc = doc(db, 'artifacts', appId, 'public', 'data', 'players', currentUser.uid);
             const snap = await getDoc(pDoc);
-            const currentScore = snap.exists() ? snap.data().score : 0;
-            await updateDoc(pDoc, { score: currentScore + points });
+            await updateDoc(pDoc, { score: (snap.data()?.score || 0) + points });
             
             render(`
-                <div class="min-h-screen bg-indigo-900 flex flex-col items-center justify-center text-white p-6 text-center">
-                    <div class="w-32 h-32 bg-white/10 rounded-full flex items-center justify-center mb-8 animate-bounce">
-                        <i class="fas fa-paper-plane text-5xl text-yellow-400"></i>
+                <div class="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white p-6 text-center">
+                    <div class="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mb-6 animate-bounce">
+                        <i class="fas fa-paper-plane text-emerald-500 text-3xl"></i>
                     </div>
-                    <h2 class="text-5xl font-black uppercase italic tracking-tighter mb-4">TERKIRIM!</h2>
-                    <p class="text-indigo-200 text-xl font-bold max-w-xs">Jawaban Anda sudah masuk.</p>
-                    <div class="mt-4 px-6 py-2 bg-indigo-800 rounded-full text-sm font-mono text-indigo-300">
-                        ${points > 0 ? `Bagus! +${points} Poin` : 'Ups! Jawaban Salah'}
-                    </div>
+                    <h2 class="text-3xl font-black italic uppercase tracking-tighter">JAWABAN TERKIRIM</h2>
+                    <p class="text-slate-500 text-sm mt-4 font-bold uppercase tracking-widest">Analyst sedang meninjau klasemen...</p>
                 </div>
             `);
+        }
+
+        function triggerConfetti() {
+            const end = Date.now() + (2 * 1000);
+            const colors = ['#3b82f6', '#22d3ee', '#ffffff'];
+
+            (function frame() {
+                confetti({
+                    particleCount: 3,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    colors: colors
+                });
+                confetti({
+                    particleCount: 3,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                    colors: colors
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
         }
 
         async function showLeaderboard() {
@@ -340,31 +339,40 @@
             snap.forEach(d => players.push(d.data()));
             players.sort((a,b) => b.score - a.score);
 
-            const isLastQuestion = currentGameState.questionIndex + 1 >= quizData.length;
+            const isLast = currentGameState.questionIndex + 1 >= quizData.length;
+
+            // Jika ini soal terakhir, nyalakan confetti berulang
+            if (isLast && !confettiInterval) {
+                triggerConfetti();
+                confettiInterval = setInterval(triggerConfetti, 3000);
+            }
 
             render(`
-                <div class="min-h-screen bg-indigo-950 text-white p-6 flex flex-col items-center">
-                    <h1 class="text-5xl font-black mb-12 italic tracking-tighter text-yellow-400 uppercase underline decoration-indigo-500 underline-offset-8">KLASEMEN TOP 10</h1>
-                    
-                    <div class="w-full max-w-3xl space-y-3">
+                <div class="min-h-screen bg-slate-950 text-white p-6 flex flex-col items-center">
+                    <h1 class="text-4xl font-black mb-10 italic tracking-tighter text-blue-400 uppercase mt-10">
+                        ${isLast ? '🏆 PEMENANG FINAL' : 'KLASEMEN SEMENTARA'}
+                    </h1>
+                    <div class="w-full max-w-2xl space-y-3 mb-24 relative z-10">
                         ${players.slice(0, 10).map((p, i) => `
-                            <div class="flex items-center bg-white/5 p-5 rounded-[2rem] border-l-[12px] ${i==0?'border-yellow-400 scale-105 shadow-2xl shadow-yellow-400/20':'border-white/10'} backdrop-blur-sm transition-all">
-                                <span class="text-4xl font-black w-20 text-center italic text-white/50">${i + 1}</span>
-                                <span class="flex-grow text-2xl font-black px-4 truncate uppercase italic tracking-tighter">${p.name}</span>
-                                <span class="text-4xl font-mono font-black text-yellow-400">${p.score}</span>
+                            <div class="flex items-center bg-slate-900 border border-slate-800 p-5 rounded-2xl ${i==0?'border-blue-500 bg-blue-500/10 shadow-[0_0_30px_rgba(59,130,246,0.2)] scale-105 mb-4':''}">
+                                <span class="text-2xl font-black w-10 text-slate-500 italic">
+                                    ${i == 0 ? '👑' : i + 1}
+                                </span>
+                                <span class="flex-grow text-lg font-bold uppercase italic ${i==0?'text-blue-400':''}">${p.name}</span>
+                                <span class="text-2xl font-mono font-black ${i==0?'text-blue-400':'text-slate-400'}">${p.score}</span>
                             </div>
                         `).join('')}
                     </div>
 
                     ${role === 'host' ? `
-                        <div class="mt-16 flex flex-col items-center gap-4">
-                            <button id="nextBtn" class="bg-white text-indigo-900 px-16 py-6 rounded-full font-black text-3xl hover:bg-yellow-400 transition-all shadow-2xl uppercase active:scale-95">
-                                ${isLastQuestion ? 'RESET & SELESAI' : 'PERTANYAAN BERIKUTNYA'} <i class="fas fa-chevron-right ml-2"></i>
+                        <div class="fixed bottom-10 left-1/2 -translate-x-1/2 w-full max-w-xs flex flex-col gap-4 px-6 z-20">
+                            <button id="nextBtn" class="w-full bg-white text-slate-950 px-10 py-4 rounded-2xl font-black text-xl hover:bg-blue-400 transition-all uppercase italic shadow-2xl">
+                                ${isLast ? 'Tutup & Reset' : 'Soal Berikutnya'}
                             </button>
                         </div>
                     ` : `
-                        <div class="mt-12 text-center text-white/30 font-bold uppercase tracking-[0.4em] animate-pulse italic">
-                            ${isLastQuestion ? 'Kuis Selesai! Menunggu Host...' : 'Bersiap untuk ronde selanjutnya...'}
+                         <div class="fixed bottom-10 text-slate-500 text-xs font-bold uppercase tracking-widest animate-pulse">
+                            ${isLast ? 'Permainan Selesai!' : 'Analyst akan melanjutkan ke soal berikutnya'}
                         </div>
                     `}
                 </div>
@@ -374,44 +382,26 @@
                 document.getElementById('nextBtn').onclick = async () => {
                     const next = currentGameState.questionIndex + 1;
                     if (next < quizData.length) {
-                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'gameStatus', 'main'), { 
-                            currentStep: 'question', 
-                            questionIndex: next, 
-                            startTime: Date.now() 
-                        });
+                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'gameStatus', 'main'), { currentStep: 'question', questionIndex: next, startTime: Date.now() });
                     } else {
-                        // Reset skor untuk sesi berikutnya jika host menekan tombol setelah soal terakhir
-                        const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'players'));
-                        const pSnap = await getDocs(q);
-                        for (const pDoc of pSnap.docs) {
-                            await updateDoc(pDoc.ref, { score: 0 });
-                        }
-                        
-                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'gameStatus', 'main'), { 
-                            currentStep: 'lobby', 
-                            questionIndex: 0 
-                        });
+                        await resetGameData();
                     }
                 };
             }
         }
 
-        window.addEventListener('load', initApp);
+        window.onload = initApp;
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; overflow-x: hidden; user-select: none; -webkit-tap-highlight-color: transparent; }
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
+        body { font-family: 'Inter', sans-serif; background: #020617; color: white; overflow-x: hidden; }
+        button { touch-action: manipulation; }
     </style>
 </head>
-<body class="bg-gray-100">
+<body>
     <div id="app-container">
-        <div class="min-h-screen flex flex-col items-center justify-center">
-            <div class="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent mb-4"></div>
-            <p class="text-blue-600 font-bold animate-pulse uppercase tracking-widest text-xs tracking-widest">SINKRONISASI DATABASE...</p>
+        <div class="h-screen flex items-center justify-center text-blue-500 font-bold animate-pulse uppercase tracking-widest">
+            SINKRONISASI DATA...
         </div>
     </div>
 </body>
