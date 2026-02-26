@@ -6,7 +6,7 @@
     <title>Gashoot Quiz Master</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Tambahkan library Confetti -->
+    <!-- Library Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <script type="module">
@@ -50,7 +50,7 @@
                         isMusicPlaying = true;
                         renderAudioControl();
                     }).catch(error => {
-                        console.error("Playback gagal:", error);
+                        console.error("Playback failed:", error);
                     });
                 }
             }
@@ -100,7 +100,7 @@
                     }
                 });
             } catch (error) {
-                render(`<div class="p-10 text-center text-white">Error connecting to database.</div>`);
+                render(`<div class="p-10 text-center text-white">Gagal terhubung ke database.</div>`);
             }
         }
 
@@ -124,18 +124,18 @@
                             Login sebagai Analyst
                         </button>
                     </div>
-                    <p class="mt-8 text-slate-500 text-xs italic">Klik ikon speaker di pojok atas jika musik tidak mulai otomatis.</p>
                 </div>
             `);
 
             document.getElementById('joinBtn').onclick = () => {
                 const name = document.getElementById('playerName').value;
                 if(name.trim().length < 2) return alert("Nama minimal 2 karakter!");
-                if(!isMusicPlaying) window.toggleMusic();
+                // Musik TIDAK dinyalakan otomatis untuk peserta
                 joinGame(name);
             };
             
             document.getElementById('hostBtn').onclick = () => {
+                // Musik dinyalakan otomatis HANYA untuk analyst
                 if(!isMusicPlaying) window.toggleMusic();
                 becomeHost();
             };
@@ -168,7 +168,6 @@
         function updateUI() {
             if (!currentGameState) return;
             
-            // Hentikan confetti jika pindah langkah selain leaderboard final
             if (confettiInterval) {
                 clearInterval(confettiInterval);
                 confettiInterval = null;
@@ -341,7 +340,6 @@
 
             const isLast = currentGameState.questionIndex + 1 >= quizData.length;
 
-            // Jika ini soal terakhir, nyalakan confetti berulang
             if (isLast && !confettiInterval) {
                 triggerConfetti();
                 confettiInterval = setInterval(triggerConfetti, 3000);
