@@ -72,57 +72,57 @@
             `;
         }
 
-        // 10 Pertanyaan Terbaru sesuai permintaan
+        // Data Kuis Baru
         const quizData = [
             { 
-                question: "Mengapa Operational Excellence (OE) diposisikan sebagai fondasi terbawah dalam piramida alat strategis SQ Alfamidi?", 
-                options: ["Karena operasional adalah departemen dengan jumlah karyawan terbanyak.", "Karena kualitas layanan mustahil terwujud jika proses internal masih kacau.", "Agar perusahaan dapat menekan biaya operasional sekecil mungkin.", "Karena kepemimpinan efektif hanya jika staf memahami SOP."], 
-                correct: 1 
-            },
-            { 
-                question: "Dalam konteks hakikat bisnis ritel, apa tantangan tersulit dalam menjaga 'Keseimbangan Optimal'?", 
-                options: ["Pelayanan terbaik namun tetap menggunakan sumber daya yang minimal secara efisien.", "Menyeimbangkan jam kerja antara karyawan Warehouse dan Office.", "Memastikan jumlah produk selalu lebih banyak daripada permintaan.", "Mewajibkan seluruh personel memiliki Growth Mindset."], 
-                correct: 0 
-            },
-            { 
-                question: "Jika kasir melayani cepat namun kurang ramah dan tidak peduli, pilar mana dalam SQ Framework yang gagal?", 
-                options: ["Pilar Process", "Pilar Product", "Pilar People (mengabaikan proaktif, peduli, tulus)", "Pilar Place"], 
+                question: "Organ dalam tubuh manusia yang berfungsi memompa darah ke seluruh tubuh adalah…", 
+                options: ["Paru-paru", "Ginjal", "Jantung", "Hati"], 
                 correct: 2 
             },
             { 
-                question: "Kapan sebuah layanan dikategorikan sebagai 'Excellence Service' menurut SQ Perspective?", 
-                options: ["Ketika dijalankan sesuai SOP.", "Ketika tidak ada komplain sama sekali.", "Ketika mencapai target penjualan dan laba.", "Ketika kualitas layanan aktual melampaui harapan konsumen."], 
+                question: "Negara dengan jumlah penduduk terbanyak di dunia saat ini adalah…", 
+                options: ["Amerika Serikat", "India", "Indonesia", "Tiongkok"], 
+                correct: 1 
+            },
+            { 
+                question: "Perang Dunia II berakhir pada tahun…", 
+                options: ["1939", "1942", "1944", "1945"], 
                 correct: 3 
             },
             { 
-                question: "Mengapa keluhan pelanggan disebut sebagai 'Titik Balik' dalam hubungan konsumen dengan Alfamidi?", 
-                options: ["Indikator kegagalan strategi ALFACARE.", "Penanganan yang tepat mengubah kekecewaan menjadi loyalitas kuat.", "Keluhan menurunkan reputasi secara permanen.", "Menunjukkan karyawan memiliki Fixed Mindset."], 
+                question: "Proses perubahan air menjadi uap air karena panas matahari disebut…", 
+                options: ["Kondensasi", "Presipitasi", "Evaporasi", "Infiltrasi"], 
+                correct: 2 
+            },
+            { 
+                question: "Gunung tertinggi di Indonesia adalah…", 
+                options: ["Gunung Semeru", "Gunung Rinjani", "Gunung Kerinci", "Puncak Jaya"], 
+                correct: 3 
+            },
+            { 
+                question: "Organisasi negara-negara di kawasan Asia Tenggara disebut…", 
+                options: ["APEC", "NATO", "ASEAN", "OPEC"], 
+                correct: 2 
+            },
+            { 
+                question: "Planet terbesar di tata surya adalah…", 
+                options: ["Saturnus", "Jupiter", "Uranus", "Neptunus"], 
                 correct: 1 
             },
             { 
-                question: "Negara manakah yang secara resmi dikenal sebagai negara penghasil timah terbesar di dunia?", 
-                options: ["Indonesia", "Malaysia", "China", "Thailand"], 
+                question: "Penemu teori relativitas adalah…", 
+                options: ["Isaac Newton", "Galileo Galilei", "Albert Einstein", "Nikola Tesla"], 
                 correct: 2 
             },
             { 
-                question: "Di manakah letak kantor pusat organisasi kesehatan dunia atau WHO?", 
-                options: ["New York, Amerika Serikat", "Den Haag, Belanda", "Jenewa, Swiss", "Brussels, Belgia"], 
-                correct: 2 
+                question: "Proklamasi kemerdekaan Indonesia dibacakan pada tanggal…", 
+                options: ["1 Juni 1945", "10 November 1945", "17 Agustus 1944", "17 Agustus 1945"], 
+                correct: 3 
             },
             { 
-                question: "Siapakah tokoh yang mengusulkan istilah 'Pancasila' pada sidang BPUPKI 1 Juni 1945?", 
-                options: ["Mohammad Yamin", "Dr. Soepomo", "Ir. Soekarno", "Drs. Moh. Hatta"], 
-                correct: 2 
-            },
-            { 
-                question: "Manakah di antara selat berikut ini yang memegang predikat sebagai selat terpanjang di dunia?", 
-                options: ["Selat Sunda", "Selat Malaka", "Selat Makassar", "Selat Bali"], 
-                correct: 1 
-            },
-            { 
-                question: "Di balik dedikasinya, apakah cita-cita pribadi dari Pak Abdul Rouf yang sebenarnya?", 
-                options: ["GM Building & Maintenance.", "Direktur Operasional Ritel.", "Menjadi seorang Kapolsek.", "Konsultan Arsitektur."], 
-                correct: 2 
+                question: "Sungai terpanjang di Indonesia adalah…", 
+                options: ["Sungai Kapuas", "Sungai Musi", "Sungai Mahakam", "Sungai Bengawan Solo"], 
+                correct: 0 
             }
         ];
 
@@ -153,7 +153,7 @@
                             <i class="fas fa-rocket text-3xl"></i>
                         </div>
                         <h1 class="text-4xl font-black mb-2 bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent italic tracking-tighter uppercase">GASHOOT QUIZ</h1>
-                        <p class="text-slate-400 text-xs font-bold tracking-[0.3em] mb-8 uppercase">Special Edition</p>
+                        <p class="text-slate-400 text-xs font-bold tracking-[0.3em] mb-8 uppercase">Pengetahuan Umum</p>
                         
                         <input type="text" id="playerName" placeholder="Nama Peserta..." class="w-full p-4 bg-slate-900 border border-slate-700 rounded-2xl mb-4 text-center font-bold outline-none focus:border-blue-500 transition-all text-white">
                         
@@ -170,7 +170,7 @@
 
             document.getElementById('joinBtn').onclick = () => {
                 const name = document.getElementById('playerName').value;
-                if(name.trim().length < 2) return alert("Nama minimal 2 karakter!");
+                if(name.trim().length < 2) return;
                 joinGame(name);
             };
             
@@ -220,8 +220,6 @@
         }
 
         window.resetGameData = async () => {
-            if (!confirm("Apakah Anda yakin ingin menghapus SEMUA data pemain dan kembali ke awal?")) return;
-            
             const batch = writeBatch(db);
             const playerSnap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'players'));
             playerSnap.forEach(doc => batch.delete(doc.ref));
